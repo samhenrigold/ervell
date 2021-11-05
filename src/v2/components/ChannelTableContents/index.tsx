@@ -8,7 +8,6 @@ import {
   ChannelTableContentsSet_channel_blokks,
 } from '__generated__/ChannelTableContentsSet'
 
-import Text from 'v2/components/UI/Text'
 import CHANNEL_TABLE_CONTENTS_QUERY from './queries/ChannelTableContents'
 import { ChannelRow } from './components/ChannelRow'
 import ExpandedBlockRow from './components/ExpandedBlockRow'
@@ -16,11 +15,9 @@ import ExpandedChannelRow from './components/ExpandedChannelRow'
 import { PotentiallyEditableBlockCell } from './components/PotentiallyEditableBlockCell'
 import { ContentCell } from './components/ContentCell'
 import { StandardCell } from './components/StandardCell'
-import constants from 'v2/styles/constants'
-import SortArrows from '../UI/SortArrows'
-import Box from '../UI/Box'
 import { SortDirection, Sorts } from '__generated__/globalTypes'
 import { useQuery } from '@apollo/client'
+import ChannelTableHeader from './components/ChannelTableHeader'
 
 const Table = styled.table`
   width: 100%;
@@ -49,19 +46,7 @@ export const TD = styled.td`
   }
 `
 
-const THead = styled.thead``
-
-const TH = styled(TD)`
-  font-weight: bold;
-  padding: ${x => x.theme.space[2]} ${x => x.theme.space[4]};
-  vertical-align: middle;
-  position: sticky;
-  top: ${constants.headerHeight};
-  background: ${x => x.theme.colors.background};
-  z-index: 1;
-`
-
-const TR = styled.tr`
+export const TR = styled.tr`
   cursor: zoom-in;
 
   &:hover ${TD} {
@@ -76,14 +61,6 @@ const TR = styled.tr`
   &:hover ${TD}:last-child {
     border-right-color: ${x => x.theme.colors.gray.regular};
   }
-
-  &:hover ${TH} {
-    border-color: ${x => x.theme.colors.gray.light};
-  }
-`
-
-const HeaderRow = styled(TR)`
-  cursor: text;
 `
 
 function getInitialExpandedState(
@@ -185,7 +162,7 @@ export const ChannelTableContents: React.FC<ChannelTableContentsProps> = ({
         disableSortBy: true,
       },
       {
-        Header: '',
+        Header: 'SettingsAndAdd',
         Cell: StandardCell,
         id: 'id',
         width: 70,
@@ -236,47 +213,8 @@ export const ChannelTableContents: React.FC<ChannelTableContentsProps> = ({
 
   return (
     <Table {...getTableProps()}>
-      <THead>
-        {headerGroups.map((headerGroup, i) => (
-          <HeaderRow key={`header-${i}`} {...headerGroup.getHeaderGroupProps()}>
-            {headerGroup.headers.map((column, j) => {
-              const sortState = column.isSorted
-                ? column.isSortedDesc
-                  ? 'down'
-                  : 'up'
-                : 'off'
-              return (
-                <TH
-                  key={`key-${j}`}
-                  width={column.width}
-                  {...column.getHeaderProps()}
-                >
-                  <Box display="flex" flexDirection="row" alignItems="center">
-                    <Text f={1} mr={5}>
-                      {column.render('Header')}
-                    </Text>
-                    {column.canSort && (
-                      <SortArrows
-                        state={sortState}
-                        onDown={() =>
-                          column.isSortedDesc
-                            ? column.clearSortBy()
-                            : column.toggleSortBy(true)
-                        }
-                        onUp={() =>
-                          column.isSorted
-                            ? column.clearSortBy()
-                            : column.toggleSortBy()
-                        }
-                      />
-                    )}
-                  </Box>
-                </TH>
-              )
-            })}
-          </HeaderRow>
-        ))}
-      </THead>
+      <ChannelTableHeader headerGroups={headerGroups} />
+
       <tbody {...getTableBodyProps()}>
         {rows.map((row, i) => {
           prepareRow(row)
