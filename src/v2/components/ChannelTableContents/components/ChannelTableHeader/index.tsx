@@ -6,11 +6,28 @@ import Box from 'v2/components/UI/Box'
 import Text from 'v2/components/UI/Text'
 import SortArrows from 'v2/components/UI/SortArrows'
 
-import { TD, TR } from '../..'
-
 import constants from 'v2/styles/constants'
 
-const THead = styled.thead``
+export const TD = styled.td`
+  color: ${x => x.theme.colors.gray.bold};
+  border: 1px solid ${x => x.theme.colors.gray.light};
+  border-right: none;
+  font-size: ${x => x.theme.fontSizesIndexed.sx};
+  height: 30px;
+  line-height: 0;
+  padding: 0;
+  width: ${x => x.width};
+  max-width: ${x => x.maxWidth || 0};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:nth-last-of-type(2) {
+    border-right: 1px solid ${x => x.theme.colors.gray.light};
+  }
+`
+
+export const TR = styled.tr``
 
 const HeaderRow = styled(TR)`
   cursor: text;
@@ -28,24 +45,38 @@ const TH = styled(TD)`
 
 const SettingsAddTH = styled(TH)`
   border-color: transparent;
+  width: 50px;
 `
 
 interface ChannelTableHeaderProps {
   headerGroups: HeaderGroup<object>[]
 }
 
-const ChannelTableHeader: React.FC<ChannelTableHeaderProps> = ({
+export const ChannelTableHeader: React.FC<ChannelTableHeaderProps> = ({
   headerGroups,
 }) => {
   return (
-    <THead>
+    <thead>
       {headerGroups.map((headerGroup, i) => (
         <HeaderRow key={`header-${i}`} {...headerGroup.getHeaderGroupProps()}>
           {headerGroup.headers.map((column, j) => {
-            console.log({ header: column.Header })
+            console.log('column.Header.toString()', column.Header.toString())
 
             if (column.Header.toString() === 'SettingsAndAdd') {
-              return <SettingsAddTH />
+              console.log('RETURNING SETTINGS')
+              return (
+                <SettingsAddTH
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                >
+                  <Box>
+                    <Text f={1} mr={5}>
+                      {' '}
+                    </Text>
+                  </Box>
+                </SettingsAddTH>
+              )
             }
 
             const sortState = column.isSorted
@@ -84,7 +115,7 @@ const ChannelTableHeader: React.FC<ChannelTableHeaderProps> = ({
           })}
         </HeaderRow>
       ))}
-    </THead>
+    </thead>
   )
 }
 

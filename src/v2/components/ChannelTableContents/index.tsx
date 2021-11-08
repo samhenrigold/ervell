@@ -1,23 +1,23 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useExpanded, useSortBy, useTable } from 'react-table'
+import { useQuery } from '@apollo/client'
 import styled from 'styled-components'
 
-import {
-  ChannelTableContentsSet,
-  ChannelTableContentsSetVariables,
-  ChannelTableContentsSet_channel_blokks,
-} from '__generated__/ChannelTableContentsSet'
-
-import CHANNEL_TABLE_CONTENTS_QUERY from './queries/ChannelTableContents'
 import { ChannelRow } from './components/ChannelRow'
 import ExpandedBlockRow from './components/ExpandedBlockRow'
 import ExpandedChannelRow from './components/ExpandedChannelRow'
 import { PotentiallyEditableBlockCell } from './components/PotentiallyEditableBlockCell'
 import { ContentCell } from './components/ContentCell'
 import { StandardCell } from './components/StandardCell'
+import { ChannelTableHeader } from './components/ChannelTableHeader'
+
+import CHANNEL_TABLE_CONTENTS_QUERY from './queries/ChannelTableContents'
 import { SortDirection, Sorts } from '__generated__/globalTypes'
-import { useQuery } from '@apollo/client'
-import ChannelTableHeader from './components/ChannelTableHeader'
+import {
+  ChannelTableContentsSet,
+  ChannelTableContentsSetVariables,
+  ChannelTableContentsSet_channel_blokks,
+} from '__generated__/ChannelTableContentsSet'
 
 const Table = styled.table`
   width: 100%;
