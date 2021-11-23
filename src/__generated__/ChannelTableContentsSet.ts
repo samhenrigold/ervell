@@ -16,6 +16,11 @@ export interface ChannelTableContentsSet_channel_counts {
   channels: number | null;
 }
 
+export interface ChannelTableContentsSet_channel_can {
+  __typename: "ChannelCan";
+  add_to: boolean | null;
+}
+
 export interface ChannelTableContentsSet_channel_blokks_Attachment_counts {
   __typename: "BlockCounts";
   public_channels: number | null;
@@ -368,6 +373,7 @@ export interface ChannelTableContentsSet_channel {
   __typename: "Channel";
   id: number;
   counts: ChannelTableContentsSet_channel_counts | null;
+  can: ChannelTableContentsSet_channel_can | null;
   blokks: ChannelTableContentsSet_channel_blokks[] | null;
 }
 

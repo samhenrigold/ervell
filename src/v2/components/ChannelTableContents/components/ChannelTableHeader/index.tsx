@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { HeaderGroup } from 'react-table'
 import styled from 'styled-components'
 
@@ -7,6 +7,16 @@ import Text from 'v2/components/UI/Text'
 import SortArrows from 'v2/components/UI/SortArrows'
 
 import constants from 'v2/styles/constants'
+import { TableAddButton } from './AddButton'
+import { ChannelTableContentsSet_channel } from '__generated__/ChannelTableContentsSet'
+import { STANDARD_HEADERS } from '../..'
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 ${x => x.theme.space[4]};
+  table-layout: fixed;
+`
 
 export const TD = styled.td`
   color: ${x => x.theme.colors.gray.bold};
@@ -22,7 +32,7 @@ export const TD = styled.td`
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  &:nth-last-of-type(2) {
+  &:nth-last-of-type(1) {
     border-right: 1px solid ${x => x.theme.colors.gray.light};
   }
 `
@@ -44,78 +54,95 @@ const TH = styled(TD)`
 `
 
 const SettingsAddTH = styled(TH)`
-  border-color: transparent;
-  width: 50px;
+  width: 60px;
+  padding: 0;
 `
 
 interface ChannelTableHeaderProps {
   headerGroups: HeaderGroup<object>[]
+  channel: ChannelTableContentsSet_channel
 }
 
 export const ChannelTableHeader: React.FC<ChannelTableHeaderProps> = ({
   headerGroups,
+  channel,
 }) => {
+  const [mode, setMode] = useState<'resting' | 'add'>('resting')
+
+  const columnCount = STANDARD_HEADERS.length
+
+  if (mode === 'add') {
+    return (
+      <thead>
+        <TH colSpan={columnCount}>
+          <Box>
+            <Text>Adding...</Text>
+          </Box>
+        </TH>
+      </thead>
+    )
+  }
+
   return (
-    <thead>
-      {headerGroups.map((headerGroup, i) => (
-        <HeaderRow key={`header-${i}`} {...headerGroup.getHeaderGroupProps()}>
-          {headerGroup.headers.map((column, j) => {
-            console.log('column.Header.toString()', column.Header.toString())
+    <Table>
+      <thead>
+        {headerGroups.map((headerGroup, i) => (
+          <HeaderRow key={`header-${i}`} {...headerGroup.getHeaderGroupProps()}>
+            {headerGroup.headers.map((column, j) => {
+              if (
+                column.Header.toString() === 'SettingsAndAdd' &&
+                channel?.can.add_to
+              ) {
+                return (
+                  <SettingsAddTH
+                    display="flex"
+                    flexDirection="row"
+                    alignItems="center"
+                  >
+                    <TableAddButton onClick={() => setMode('add')} />
+                  </SettingsAddTH>
+                )
+              }
 
-            if (column.Header.toString() === 'SettingsAndAdd') {
-              console.log('RETURNING SETTINGS')
+              const sortState = column.isSorted
+                ? column.isSortedDesc
+                  ? 'down'
+                  : 'up'
+                : 'off'
+
               return (
-                <SettingsAddTH
-                  display="flex"
-                  flexDirection="row"
-                  alignItems="center"
+                <TH
+                  key={`key-${j}`}
+                  width={column.width}
+                  {...column.getHeaderProps()}
                 >
-                  <Box>
+                  <Box display="flex" flexDirection="row" alignItems="center">
                     <Text f={1} mr={5}>
-                      {' '}
+                      {column.render('Header')}
                     </Text>
+                    {column.canSort && (
+                      <SortArrows
+                        state={sortState}
+                        onDown={() =>
+                          column.isSortedDesc
+                            ? column.clearSortBy()
+                            : column.toggleSortBy(true)
+                        }
+                        onUp={() =>
+                          column.isSorted
+                            ? column.clearSortBy()
+                            : column.toggleSortBy()
+                        }
+                      />
+                    )}
                   </Box>
-                </SettingsAddTH>
+                </TH>
               )
-            }
-
-            const sortState = column.isSorted
-              ? column.isSortedDesc
-                ? 'down'
-                : 'up'
-              : 'off'
-            return (
-              <TH
-                key={`key-${j}`}
-                width={column.width}
-                {...column.getHeaderProps()}
-              >
-                <Box display="flex" flexDirection="row" alignItems="center">
-                  <Text f={1} mr={5}>
-                    {column.render('Header')}
-                  </Text>
-                  {column.canSort && (
-                    <SortArrows
-                      state={sortState}
-                      onDown={() =>
-                        column.isSortedDesc
-                          ? column.clearSortBy()
-                          : column.toggleSortBy(true)
-                      }
-                      onUp={() =>
-                        column.isSorted
-                          ? column.clearSortBy()
-                          : column.toggleSortBy()
-                      }
-                    />
-                  )}
-                </Box>
-              </TH>
-            )
-          })}
-        </HeaderRow>
-      ))}
-    </thead>
+            })}
+          </HeaderRow>
+        ))}
+      </thead>
+    </Table>
   )
 }
 

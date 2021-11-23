@@ -108,6 +108,7 @@ export const ChannelTableQuery: React.FC<ChannelTableQueryProps> = ({ id }) => {
   return (
     <ChannelTableContents
       blocks={data?.channel.blokks}
+      channel={data?.channel}
       setSort={setSort}
       setDirection={setDirection}
     />
@@ -116,60 +117,61 @@ export const ChannelTableQuery: React.FC<ChannelTableQueryProps> = ({ id }) => {
 
 interface ChannelTableContentsProps {
   blocks: ChannelTableContentsSet['channel']['blokks']
+  channel: ChannelTableContentsSet['channel']
   setSort: React.Dispatch<React.SetStateAction<Sorts>>
   setDirection: React.Dispatch<React.SetStateAction<SortDirection>>
 }
 
+export const STANDARD_HEADERS = [
+  {
+    Header: 'Content',
+    accessor: block => block,
+    Cell: ContentCell,
+    width: FIRST_COLUMN_WIDTH,
+    disableSortBy: true,
+  },
+  {
+    Header: 'Title',
+    Cell: PotentiallyEditableBlockCell,
+    accessor: block => ({ block, attr: 'title' }),
+    width: '40%',
+    disableSortBy: true,
+  },
+  {
+    Header: 'Added at',
+    accessor: 'connection.created_at',
+    Cell: StandardCell,
+    maxWidth: '200px',
+  },
+  {
+    Header: 'Author',
+    accessor: 'user.name',
+    Cell: StandardCell,
+    maxWidth: '200px',
+    disableSortBy: true,
+  },
+  {
+    Header: 'Connections',
+    accessor: 'counts.public_channels',
+    Cell: StandardCell,
+    width: '200px',
+    disableSortBy: true,
+  },
+  {
+    Header: 'SettingsAndAdd',
+    Cell: StandardCell,
+    id: 'id',
+    width: '70px',
+  },
+]
+
 export const ChannelTableContents: React.FC<ChannelTableContentsProps> = ({
   blocks,
+  channel,
   setSort,
   setDirection,
 }) => {
-  const headers = useMemo(
-    () => [
-      {
-        Header: 'Content',
-        accessor: block => block,
-        Cell: ContentCell,
-        width: FIRST_COLUMN_WIDTH,
-        disableSortBy: true,
-      },
-      {
-        Header: 'Title',
-        Cell: PotentiallyEditableBlockCell,
-        accessor: block => ({ block, attr: 'title' }),
-        width: '40%',
-        disableSortBy: true,
-      },
-      {
-        Header: 'Added at',
-        accessor: 'connection.created_at',
-        Cell: StandardCell,
-        maxWidth: 200,
-      },
-      {
-        Header: 'Author',
-        accessor: 'user.name',
-        Cell: StandardCell,
-        maxWidth: 200,
-        disableSortBy: true,
-      },
-      {
-        Header: 'Connections',
-        accessor: 'counts.public_channels',
-        Cell: StandardCell,
-        width: 200,
-        disableSortBy: true,
-      },
-      {
-        Header: 'SettingsAndAdd',
-        Cell: StandardCell,
-        id: 'id',
-        width: 70,
-      },
-    ],
-    []
-  ) as any
+  const headers = useMemo(() => STANDARD_HEADERS, []) as any
 
   const tableInstance = useTable(
     {
@@ -212,66 +214,68 @@ export const ChannelTableContents: React.FC<ChannelTableContentsProps> = ({
   }, [state, setDirection, setSort])
 
   return (
-    <Table {...getTableProps()}>
-      <ChannelTableHeader headerGroups={headerGroups} />
+    <>
+      <ChannelTableHeader channel={channel} headerGroups={headerGroups} />
 
-      <tbody {...getTableBodyProps()}>
-        {rows.map((row, i) => {
-          prepareRow(row)
+      <Table {...getTableProps()}>
+        <tbody {...getTableBodyProps()}>
+          {rows.map((row, i) => {
+            prepareRow(row)
 
-          const typedRowOriginal = row.original as ChannelTableContentsSet_channel_blokks
-          const openRow = () => row.toggleRowExpanded(true)
+            const typedRowOriginal = row.original as ChannelTableContentsSet_channel_blokks
+            const openRow = () => row.toggleRowExpanded(true)
 
-          if (row.isExpanded && typedRowOriginal.__typename !== 'Channel') {
+            if (row.isExpanded && typedRowOriginal.__typename !== 'Channel') {
+              return (
+                <ExpandedBlockRow
+                  block={typedRowOriginal}
+                  columnLength={columns.length}
+                  {...row.getRowProps()}
+                  onMinimize={() => row.toggleRowExpanded(false)}
+                />
+              )
+            }
+
+            if (row.isExpanded && typedRowOriginal.__typename === 'Channel') {
+              return (
+                <ExpandedChannelRow
+                  channel={typedRowOriginal}
+                  columnLength={columns.length}
+                  {...row.getRowProps()}
+                  onMinimize={() => row.toggleRowExpanded(false)}
+                />
+              )
+            }
+
+            if (typedRowOriginal.__typename === 'Channel') {
+              return (
+                <ChannelRow
+                  channel={typedRowOriginal}
+                  {...row.getRowProps()}
+                  onClick={openRow}
+                />
+              )
+            }
+
             return (
-              <ExpandedBlockRow
-                block={typedRowOriginal}
-                columnLength={columns.length}
-                {...row.getRowProps()}
-                onMinimize={() => row.toggleRowExpanded(false)}
-              />
+              <TR key={`tr-key-${i}`} {...row.getRowProps()} onClick={openRow}>
+                {row.cells.map((cell, j) => {
+                  return (
+                    <TD
+                      width={`${cell.column.width}px`}
+                      maxWidth={cell.column.maxWidth}
+                      key={`td-key-${j}`}
+                      {...cell.getCellProps()}
+                    >
+                      {cell.render('Cell')}
+                    </TD>
+                  )
+                })}
+              </TR>
             )
-          }
-
-          if (row.isExpanded && typedRowOriginal.__typename === 'Channel') {
-            return (
-              <ExpandedChannelRow
-                channel={typedRowOriginal}
-                columnLength={columns.length}
-                {...row.getRowProps()}
-                onMinimize={() => row.toggleRowExpanded(false)}
-              />
-            )
-          }
-
-          if (typedRowOriginal.__typename === 'Channel') {
-            return (
-              <ChannelRow
-                channel={typedRowOriginal}
-                {...row.getRowProps()}
-                onClick={openRow}
-              />
-            )
-          }
-
-          return (
-            <TR key={`tr-key-${i}`} {...row.getRowProps()} onClick={openRow}>
-              {row.cells.map((cell, j) => {
-                return (
-                  <TD
-                    width={cell.column.width}
-                    maxWidth={cell.column.maxWidth}
-                    key={`td-key-${j}`}
-                    {...cell.getCellProps()}
-                  >
-                    {cell.render('Cell')}
-                  </TD>
-                )
-              })}
-            </TR>
-          )
-        })}
-      </tbody>
-    </Table>
+          })}
+        </tbody>
+      </Table>
+    </>
   )
 }

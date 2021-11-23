@@ -11,11 +11,17 @@ export default gql`
     channel(id: $id) {
       __typename
       id
+
       counts {
         contents
         blocks
         channels
       }
+
+      can {
+        add_to
+      }
+
       blokks(page: $page, per: $per, sort_by: $sort, direction: $direction) {
         __typename
 
