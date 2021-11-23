@@ -73,13 +73,15 @@ export const ChannelTableHeader: React.FC<ChannelTableHeaderProps> = ({
 
   if (mode === 'add') {
     return (
-      <thead>
-        <TH colSpan={columnCount}>
-          <Box>
-            <Text>Adding...</Text>
-          </Box>
-        </TH>
-      </thead>
+      <Table>
+        <thead>
+          <TH colSpan={columnCount}>
+            <Box>
+              <Text>Adding...</Text>
+            </Box>
+          </TH>
+        </thead>
+      </Table>
     )
   }
 
